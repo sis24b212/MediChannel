@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
