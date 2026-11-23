@@ -1,3 +1,4 @@
+
 package lk.lankacare.medichannel.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,6 +29,13 @@ public class AdminController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(adminService.getSystemDashboard());
+    }
+
+    @GetMapping("/specializations")
+    public ResponseEntity<List<Map<String, Object>>> listSpecializations() {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(adminService.listSpecializations());
     }
 
     @GetMapping("/users")
@@ -47,6 +56,14 @@ public class AdminController {
             HttpServletRequest httpReq
     ) {
         Long adminId = (Long) auth.getPrincipal();
+
+        String specIdStr = body.get("specializationId");
+
+        Long specializationId =
+                (specIdStr != null && !specIdStr.isBlank())
+                        ? Long.valueOf(specIdStr)
+                        : null;
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(adminService.createStaffAccount(
                         adminId,
@@ -54,6 +71,8 @@ public class AdminController {
                         body.getOrDefault("email", ""),
                         body.getOrDefault("role", ""),
                         body.getOrDefault("temporaryPassword", ""),
+                        specializationId,
+                        body.getOrDefault("slmcRegNo", ""),
                         httpReq.getRemoteAddr()
                 ));
     }
@@ -66,9 +85,15 @@ public class AdminController {
             HttpServletRequest httpReq
     ) {
         Long adminId = (Long) auth.getPrincipal();
-        return ResponseEntity.ok(
-                adminService.setUserActive(adminId, id, Boolean.TRUE.equals(body.get("active")), httpReq.getRemoteAddr())
-        );
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(adminService.setUserActive(
+                        adminId,
+                        id,
+                        Boolean.TRUE.equals(body.get("active")),
+                        httpReq.getRemoteAddr()
+                ));
     }
 
     @PostMapping("/users/{id}/reset-password")
@@ -79,9 +104,15 @@ public class AdminController {
             HttpServletRequest httpReq
     ) {
         Long adminId = (Long) auth.getPrincipal();
-        return ResponseEntity.ok(
-                adminService.resetStaffPassword(adminId, id, body.getOrDefault("temporaryPassword", ""), httpReq.getRemoteAddr())
-        );
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(adminService.resetStaffPassword(
+                        adminId,
+                        id,
+                        body.getOrDefault("temporaryPassword", ""),
+                        httpReq.getRemoteAddr()
+                ));
     }
 
     @GetMapping("/audit-logs")

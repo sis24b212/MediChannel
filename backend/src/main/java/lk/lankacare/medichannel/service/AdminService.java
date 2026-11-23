@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,8 +51,25 @@ public class AdminService {
         this.auditService = auditService;
     }
 
+
+    public List<Map<String, Object>> listSpecializations() {
+        return specializationRepository.findAll().stream()
+                .map(s -> Map.<String, Object>of("id", s.getId(),"name", s.getName()
+                ))
+            .toList();
+    }
+
     @Transactional
-    public Map<String, Object> createStaffAccount(Long adminId, String fullName, String email, String role, String tempPassword, String ip) {
+    public Map<String, Object> createStaffAccount(
+            Long adminId,
+            String fullName,
+            String email,
+            String role,
+            String tempPassword,
+            Long specializationId,
+            String slmcRegNo,
+            String ip
+    ) {
         String normalizedRole = role.trim().toUpperCase();
         if (!"DOCTOR".equals(normalizedRole) && !"MANAGER".equals(normalizedRole)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Admin can only create DOCTOR or MANAGER staff accounts.");
@@ -59,6 +77,20 @@ public class AdminService {
         String emailHash = hmacUtil.hashNormalized(email);
         if (userRepository.existsByEmailHash(emailHash)) {
             throw new ApiException(HttpStatus.CONFLICT, "An account with this email already exists.");
+        }
+
+        Specialization selectedSpec = null;
+        String normalizedSlmc = null;
+        if ("DOCTOR".equals(normalizedRole)) {
+            if (specializationId == null) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Please select a specialization for the doctor.");
+            }
+            if (slmcRegNo == null || slmcRegNo.isBlank()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Please enter the SLMC registration number (e.g., SLMC-24810).");
+            }
+            selectedSpec = specializationRepository.findById(specializationId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Selected specialization not found."));
+            normalizedSlmc = slmcRegNo.trim().toUpperCase();
         }
 
         User user = new User();
@@ -72,14 +104,10 @@ public class AdminService {
         user = userRepository.save(user);
 
         if ("DOCTOR".equals(normalizedRole)) {
-            Specialization defaultSpec = specializationRepository.findAll().stream()
-                    .findFirst()
-                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "No specializations found. Add a specialization in Catalog first."));
-
             Doctor doctor = new Doctor();
             doctor.setUser(user);
-            doctor.setSlmcRegNo("SLMC-" + (10000 + user.getId()));
-            doctor.setSpecialization(defaultSpec);
+            doctor.setSlmcRegNo(normalizedSlmc);
+            doctor.setSpecialization(selectedSpec);
             doctor.setQualifications("MBBS");
             doctor.setConsultationFee(new BigDecimal("3000.00"));
             doctor.setBio("Specialist Consultant at Lanka Care Hospital.");
@@ -96,7 +124,7 @@ public class AdminService {
                 ? userRepository.findByRole(role.trim().toUpperCase(),PageRequest.of(page, size))
                 : userRepository.findAll(PageRequest.of(page, size));
         return users.map(this::toAdminUserDto);
-}
+    }
 
     @Transactional
     public Map<String, Object> setUserActive(Long adminId, Long targetUserId, boolean active, String ip) {
