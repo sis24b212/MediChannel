@@ -47,6 +47,7 @@ public class DoctorSessionService {
         this.publicCatalogService = publicCatalogService;
     }
 
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getMySessions(Long doctorUserId) {
         Doctor doctor = doctorRepository.findByUserId(doctorUserId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Doctor profile not found."));
@@ -56,6 +57,7 @@ public class DoctorSessionService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getSessionPatients(Long doctorUserId, Long sessionId) {
         ChannelSession session = verifyDoctorOwnsSession(doctorUserId, sessionId);
         return appointmentRepository.findBySessionIdOrderByAppointmentNumberAsc(session.getId())

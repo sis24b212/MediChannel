@@ -1,9 +1,13 @@
 package lk.lankacare.medichannel.service;
 
 import lk.lankacare.medichannel.entity.AuditLog;
+import lk.lankacare.medichannel.entity.Doctor;
+import lk.lankacare.medichannel.entity.Specialization;
 import lk.lankacare.medichannel.entity.User;
 import lk.lankacare.medichannel.exception.ApiException;
 import lk.lankacare.medichannel.repository.AuditLogRepository;
+import lk.lankacare.medichannel.repository.DoctorRepository;
+import lk.lankacare.medichannel.repository.SpecializationRepository;
 import lk.lankacare.medichannel.repository.UserRepository;
 import lk.lankacare.medichannel.security.HmacUtil;
 import org.springframework.data.domain.Page;
@@ -13,21 +17,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * IT Administrator service (Point 3.4):
- * - Create DOCTOR and MANAGER accounts
- * - Activate/deactivate any account except their own
- * - Reset staff passwords with temporary password flag (mustChangePassword = true)
- * - Read-only paginated audit log and system dashboard
- */
 @Service
 public class AdminService {
 
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
+    private final DoctorRepository doctorRepository;
+    private final SpecializationRepository specializationRepository;
     private final PasswordEncoder passwordEncoder;
     private final HmacUtil hmacUtil;
     private final AuditService auditService;
@@ -35,12 +35,16 @@ public class AdminService {
     public AdminService(
             UserRepository userRepository,
             AuditLogRepository auditLogRepository,
+            DoctorRepository doctorRepository,
+            SpecializationRepository specializationRepository,
             PasswordEncoder passwordEncoder,
             HmacUtil hmacUtil,
             AuditService auditService
     ) {
         this.userRepository = userRepository;
         this.auditLogRepository = auditLogRepository;
+        this.doctorRepository = doctorRepository;
+        this.specializationRepository = specializationRepository;
         this.passwordEncoder = passwordEncoder;
         this.hmacUtil = hmacUtil;
         this.auditService = auditService;
@@ -64,14 +68,30 @@ public class AdminService {
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         user.setRole(normalizedRole);
         user.setActive(true);
-        user.setMustChangePassword(true); // Must change temporary password on first login
+        user.setMustChangePassword(true);
         user = userRepository.save(user);
+
+        if ("DOCTOR".equals(normalizedRole)) {
+            Specialization defaultSpec = specializationRepository.findAll().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "No specializations found. Add a specialization in Catalog first."));
+
+            Doctor doctor = new Doctor();
+            doctor.setUser(user);
+            doctor.setSlmcRegNo("SLMC-" + (10000 + user.getId()));
+            doctor.setSpecialization(defaultSpec);
+            doctor.setQualifications("MBBS");
+            doctor.setConsultationFee(new BigDecimal("3000.00"));
+            doctor.setBio("Specialist Consultant at Lanka Care Hospital.");
+            doctor.setActive(true);
+            doctorRepository.save(doctor);
+        }
 
         auditService.record(adminId, "ADMIN", "STAFF_CREATED", "USER", String.valueOf(user.getId()), ip, "Created " + normalizedRole + " account");
         return toAdminUserDto(user);
     }
 
-    public Page<Map<String, Object>> listUsers(String role, int page, int size) {
+    public Page> listUsers(String role, int page, int size) {
         Page<User> users = (role != null && !role.isBlank())
                 ? userRepository.findByRole(role.trim().toUpperCase(), PageRequest.of(page, size))
                 : userRepository.findAll(PageRequest.of(page, size));
