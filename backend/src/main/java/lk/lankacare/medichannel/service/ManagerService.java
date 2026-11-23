@@ -210,6 +210,7 @@ public class ManagerService {
     }
 
     // Reception: today's appointments (STRICTLY excludes reasonForVisit / medical notes!)
+    @Transactional(readOnly = true)
     public Page<Map<String, Object>> getReceptionAppointments(LocalDate date, int page, int size) {
         LocalDate target = date != null ? date : LocalDate.now();
         return appointmentRepository
@@ -266,6 +267,7 @@ public class ManagerService {
     }
 
     // Backend SQL/JPQL Dashboard & Reports (Point 3.3)
+    @Transactional(readOnly = true)
     public Map<String, Object> getDashboardReports() {
         List<Map<String, Object>> todaySessions = sessionRepository.findBySessionDateOrderByStartTimeAsc(LocalDate.now())
                 .stream()
