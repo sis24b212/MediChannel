@@ -1,5 +1,6 @@
 package lk.lankacare.medichannel.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import lk.lankacare.medichannel.entity.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
