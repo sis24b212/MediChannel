@@ -146,10 +146,10 @@ public class ConsultationService {
         verifyParticipantAccess(userId, role, appointmentId);
 
         Consultation c = consultationRepository.findByAppointmentId(appointmentId)
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Consultation room has not been started yet (BR-09)."));
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Consultation room has not been started yet."));
 
         if (!c.isRoomOpen()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Consultation has ended. Chat is now read-only (BR-09).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Consultation has ended. Chat is now read-only.");
         }
 
         User sender = userRepository.findById(userId)

@@ -128,7 +128,7 @@ export default function SessionDetailsPage() {
         </div>
 
         <div className="bg-slate-50 rounded-lg p-4 flex items-center justify-between text-sm tabular-nums">
-          <span className="text-slate-600">Live Numbers Remaining (updates automatically)</span>
+          <span className="text-slate-600">Live Numbers Remaining</span>
           <span className="text-lg font-bold text-teal-700">
             {session.remainingNumbers} / {session.maxPatients}
           </span>
@@ -182,7 +182,7 @@ export default function SessionDetailsPage() {
           />
 
           <p className="text-xs text-slate-500">
-            Booking closes {session.sessionType === 'PHYSICAL' ? '1 hour' : '30 minutes'} before the session starts (BR-05).
+            Booking closes {session.sessionType === 'PHYSICAL' ? '1 hour' : '30 minutes'} before the session starts.
           </p>
 
           <button

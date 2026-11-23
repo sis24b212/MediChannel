@@ -94,7 +94,7 @@ public class PatientController {
         if (payload.containsKey("phone")) {
             String phone = payload.get("phone").trim();
             if (!phone.matches("^07\\d{8}$")) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Phone must follow format 07XXXXXXXX (BR-10).");
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Phone must follow format 07XXXXXXXX.");
             }
             p.setPhone(phone);
         }

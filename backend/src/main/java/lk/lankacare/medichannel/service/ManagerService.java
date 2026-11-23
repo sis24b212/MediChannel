@@ -222,7 +222,7 @@ public class ManagerService {
         Appointment appt = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Appointment not found."));
         if (!"PHYSICAL".equals(appt.getSession().getSessionType())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Only physical appointments require reception check-in (BR-08).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Only physical appointments require reception check-in.");
         }
         if (!"BOOKED".equals(appt.getStatus())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Appointment must be in BOOKED status to mark ARRIVED.");
@@ -323,23 +323,23 @@ public class ManagerService {
 
     private void validateSessionRules(BookingDtos.SessionRequest req, Long excludeSessionId) {
         if (!req.getEndTime().isAfter(req.getStartTime())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Session end time must be after start time (BR-01).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Session end time must be after start time.");
         }
         // BR-01: Physical requires room; Online must NOT have room
         if ("PHYSICAL".equals(req.getSessionType()) && req.getRoomId() == null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Physical sessions must specify a room (BR-01).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Physical sessions must specify a room.");
         }
         if ("ONLINE".equals(req.getSessionType()) && req.getRoomId() != null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Online sessions must not be assigned a physical room (BR-01).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Online sessions must not be assigned a physical room.");
         }
         // BR-02: No overlapping doctor sessions
         if (sessionRepository.existsDoctorOverlap(req.getDoctorId(), req.getSessionDate(), req.getStartTime(), req.getEndTime(), excludeSessionId)) {
-            throw new ApiException(HttpStatus.CONFLICT, "This doctor already has an overlapping session (BR-02).");
+            throw new ApiException(HttpStatus.CONFLICT, "This doctor already has an overlapping session.");
         }
         // BR-02: No overlapping room sessions
         if ("PHYSICAL".equals(req.getSessionType())
                 && sessionRepository.existsRoomOverlap(req.getRoomId(), req.getSessionDate(), req.getStartTime(), req.getEndTime(), excludeSessionId)) {
-            throw new ApiException(HttpStatus.CONFLICT, "Selected room is already booked for another session at this time (BR-02).");
+            throw new ApiException(HttpStatus.CONFLICT, "Selected room is already booked for another session at this time.");
         }
     }
 

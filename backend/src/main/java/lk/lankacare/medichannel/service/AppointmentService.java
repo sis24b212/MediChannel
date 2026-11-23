@@ -84,19 +84,19 @@ public class AppointmentService {
             if (minutesUntilStart < cutoff) {
                 throw new ApiException(
                         HttpStatus.BAD_REQUEST,
-                        "Booking closes " + cutoff + " minutes before a " + session.getSessionType().toLowerCase() + " session (BR-05)."
+                        "Booking closes " + cutoff + " minutes before a " + session.getSessionType().toLowerCase() + " session."
                 );
             }
         }
 
         // BR-04: One active appointment per patient per session
         if (appointmentRepository.existsActiveAppointmentInSession(session.getId(), patient.getId())) {
-            throw new ApiException(HttpStatus.CONFLICT, "You already have an active appointment in this session (BR-04).");
+            throw new ApiException(HttpStatus.CONFLICT, "You already have an active appointment in this session.");
         }
 
         // BR-03: Never exceed maxPatients; never reuse cancelled numbers
         if (session.getLastIssuedNumber() >= session.getMaxPatients()) {
-            throw new ApiException(HttpStatus.CONFLICT, "This session is fully booked (BR-03).");
+            throw new ApiException(HttpStatus.CONFLICT, "This session is fully booked.");
         }
 
         int nextNumber = session.getLastIssuedNumber() + 1;
@@ -164,7 +164,7 @@ public class AppointmentService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Only booked appointments can be cancelled.");
         }
         if ("PAID".equals(appt.getPaymentStatus())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Paid appointments cannot be cancelled online (BR-07).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Paid appointments cannot be cancelled online.");
         }
 
         // BR-07: Cancel unpaid appointment until 3 hours before session; kept in DB (not deleted)
@@ -174,7 +174,7 @@ public class AppointmentService {
                 COLOMBO_ZONE
         );
         if (Duration.between(ZonedDateTime.now(COLOMBO_ZONE), sessionStart).toMinutes() < 180) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Cancellation closes 3 hours before the session start time (BR-07).");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Cancellation closes 3 hours before the session start time.");
         }
 
         appt.setStatus("CANCELLED");

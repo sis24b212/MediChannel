@@ -10,7 +10,7 @@ public class AuthDtos {
         private String fullName;
 
         @NotBlank(message = "NIC is required")
-        @Pattern(regexp = "^(\\d{9}[VvXx]|\\d{12})$", message = "NIC must be 9 digits + V/X or 12 digits (BR-10)")
+        @Pattern(regexp = "^(\\d{9}[VvXx]|\\d{12})$", message = "NIC must be 9 digits + V/X or 12 digits")
         private String nic;
 
         @NotBlank(message = "Date of birth is required")
@@ -22,7 +22,7 @@ public class AuthDtos {
         private String gender;
 
         @NotBlank(message = "Phone number is required")
-        @Pattern(regexp = "^07\\d{8}$", message = "Phone must follow Sri Lankan format 07XXXXXXXX (BR-10)")
+        @Pattern(regexp = "^07\\d{8}$", message = "Phone must follow Sri Lankan format 07XXXXXXXX")
         private String phone;
 
         @NotBlank(message = "Email is required")
@@ -36,7 +36,7 @@ public class AuthDtos {
         @NotBlank(message = "Password is required")
         @Pattern(
                 regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$",
-                message = "Password must be 8+ characters with a letter, a number, and a symbol (BR-10)"
+                message = "Password must be 8+ characters with a letter, a number, and a symbol"
         )
         private String password;
 
