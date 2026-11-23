@@ -52,7 +52,7 @@ export default function RegisterPage() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Patient Registration</h1>
         <p className="text-xs text-slate-500 mt-1">
-          All personal details are encrypted at rest with AES-256-GCM.
+          All Personal Details are Encrypted.
         </p>
       </div>
 
