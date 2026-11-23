@@ -91,12 +91,12 @@ public class AdminService {
         return toAdminUserDto(user);
     }
 
-    public Page> listUsers(String role, int page, int size) {
+    public Page<Map<String, Object>> listUsers(String role, int page, int size) {
         Page<User> users = (role != null && !role.isBlank())
-                ? userRepository.findByRole(role.trim().toUpperCase(), PageRequest.of(page, size))
+                ? userRepository.findByRole(role.trim().toUpperCase(),PageRequest.of(page, size))
                 : userRepository.findAll(PageRequest.of(page, size));
         return users.map(this::toAdminUserDto);
-    }
+}
 
     @Transactional
     public Map<String, Object> setUserActive(Long adminId, Long targetUserId, boolean active, String ip) {
