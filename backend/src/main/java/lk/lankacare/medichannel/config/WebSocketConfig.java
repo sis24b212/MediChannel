@@ -38,11 +38,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(frontendUrl.trim())
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
         // Native WebSocket endpoint for wss:// production clients
         registry.addEndpoint("/ws-native")
-                .setAllowedOrigins(frontendUrl.trim());
+                .setAllowedOriginPatterns("*");
     }
 
     @Override

@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/ws/**").permitAll() // STOMP authentication checked in WebSocketAuthChannelInterceptor
+                .requestMatchers("/ws/**", "/ws-native/**").permitAll() // STOMP authentication checked in WebSocketAuthChannelInterceptor
                 .requestMatchers("/api/patient/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
                 // Privacy rule: ONLY CUSTOMER and DOCTOR can ever call consultation endpoints
